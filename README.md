@@ -14,12 +14,14 @@ pyority
 # Try it !:
 
 ```
+sudo pip3 install psutil
 wget -O - https://raw.githubusercontent.com/juancarlospaco/pyority/master/pyority.py | python3
 ```
 
 # Install permanently on the system:
 
 ```
+sudo pip3 install psutil
 sudo wget -O /usr/bin/pyority https://raw.githubusercontent.com/juancarlospaco/pyority/master/pyority.py
 sudo chmod +x /usr/bin/pyority
 pyority
