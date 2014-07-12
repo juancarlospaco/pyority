@@ -9,9 +9,8 @@ __version__ = ' 0.0.1 '
 __license__ = ' GPLv3+ '
 __author__ = ' juancarlos '
 __email__ = ' juancarlospaco@gmail.com '
-__url__ = 'https://github.com/juancarlospaco'
+__url__ = 'https://github.com/juancarlospaco/pyority#pyority'
 __date__ = '2015/01/01'
-__prj__ = 'pyority'
 __docformat__ = 'html'
 
 
@@ -25,16 +24,14 @@ from webbrowser import open_new_tab
 import psutil
 from PyQt5.QtCore import QSize, Qt, QTimer
 from PyQt5.QtGui import QColor, QIcon
-from PyQt5.QtWidgets import (QAbstractItemView, QApplication,
+from PyQt5.QtWidgets import (QAbstractItemView, QApplication, QVBoxLayout,
                              QGraphicsDropShadowEffect, QGroupBox, QHBoxLayout,
-                             QLabel, QMainWindow, QMessageBox, QPushButton,
-                             QShortcut, QSlider, QTableWidget, QTableWidgetItem,
-                             QVBoxLayout, QWidget)
+                             QLabel, QMainWindow, QMessageBox, QShortcut,
+                             QSlider, QTableWidget, QTableWidgetItem, QWidget)
 
 
 HELP = """<h3>Pyority:</h3><b>Change CPU and I/O Priorities with Python!</b><br>
-{} version {}, licence {}, by {}.
-""".format(__doc__, __version__, __license__, __author__)
+{} version {}, licence GPLv3+, by {}""".format(__doc__, __version__, __author__)
 
 
 ###############################################################################
@@ -43,7 +40,6 @@ HELP = """<h3>Pyority:</h3><b>Change CPU and I/O Priorities with Python!</b><br>
 class MainWindow(QMainWindow):
     def __init__(self, parent=None):
         super(MainWindow, self).__init__()
-        #self.statusBar().showMessage(__doc__.strip().capitalize())
         self.setWindowTitle(__doc__.strip().capitalize())
         self.statusBar().showMessage(" Choose one App and move the sliders !")
         self.setMinimumSize(600, 600)
@@ -62,11 +58,11 @@ class MainWindow(QMainWindow):
         helpMenu.addAction("About Qt 5", lambda: QMessageBox.aboutQt(self))
         helpMenu.addAction("About Python 3",
                            lambda: open_new_tab('https://www.python.org'))
-        helpMenu.addAction("About this App",
+        helpMenu.addAction("About" + __doc__,
                            lambda: QMessageBox.about(self, __doc__, HELP))
         helpMenu.addSeparator()
         helpMenu.addAction("Keyboard Shortcut", lambda: QMessageBox.information(
-            self, __doc__, "Quit = CTRL+Q"))
+            self, __doc__, "<b>Quit = CTRL+Q"))
         helpMenu.addAction("View Source Code",
                            lambda: call('xdg-open ' + __file__, shell=True))
         helpMenu.addAction("View GitHub Repo", lambda: open_new_tab(__url__))
@@ -103,13 +99,12 @@ class MainWindow(QMainWindow):
         for index, process in enumerate(processes):
             item = QTableWidgetItem(
                 QIcon.fromTheme(process.name().split()[0].split('/')[0]),
-                process.name().split()[0].split('/')[0])
+                process.name().split()[0].split('/')[0].strip())
             item.setData(Qt.UserRole, process)
             item.setToolTip("{}, {}, {}, {}".format(
                 process.name(), process.nice(),
                 process.ionice()[1], process.pid))
             self.table.setItem(index, 0, item)
-            print((index, process))
         self.table.clicked.connect(lambda: self.sliderhdd.setDisabled(False))
         self.table.clicked.connect(lambda: self.slidercpu.setDisabled(False))
         self.table.clicked.connect(lambda: self.slidercpu.setValue(
@@ -117,7 +112,7 @@ class MainWindow(QMainWindow):
         self.table.clicked.connect(lambda: self.sliderhdd.setValue(
             int(tuple(self.table.currentItem().toolTip().split(","))[2])))
         self.table.resizeColumnsToContents()
-        self.table.resizeRowsToContents()
+        # self.table.resizeRowsToContents()
         # sliders
         self.slidercpu = QSlider()
         self.slidercpu.setRange(0, 19)
@@ -152,8 +147,6 @@ class MainWindow(QMainWindow):
         QLabel(self.sliderhdd).setPixmap(QIcon.fromTheme("list-add").pixmap(16))
         QVBoxLayout(group2).addWidget(self.sliderhdd)
         QVBoxLayout(group0).addWidget(self.table)
-        # Bottom Button
-        container_layout.addWidget(QPushButton("exit", clicked=exit))
 
     def set_cpu_value(self):
         if self.slidercpu_timer.isActive():
