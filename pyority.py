@@ -42,7 +42,7 @@ class MainWindow(QMainWindow):
         super(MainWindow, self).__init__()
         self.setWindowTitle(__doc__.strip().capitalize())
         self.statusBar().showMessage(" Choose one App and move the sliders !")
-        self.setMinimumSize(600, 600)
+        self.setMinimumSize(480, 240)
         self.setMaximumSize(640, 2048)
         self.setWindowIcon(QIcon.fromTheme("preferences-system"))
         self.center()
