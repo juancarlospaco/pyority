@@ -20,7 +20,7 @@ wget -O - https://raw.githubusercontent.com/juancarlospaco/pyority/master/pyorit
 # Install permanently on the system:
 
 ```
-sudo apt-get install python3-pip python3-pyqt5 python3
+sudo apt-get install python3-pip python3-pyqt5  # OR  sudo yum install python3-qt5  OR  sudo pacman -S python-pyqt5
 sudo pip3 install psutil
 sudo wget -O /usr/bin/pyority https://raw.githubusercontent.com/juancarlospaco/pyority/master/pyority.py
 sudo chmod +x /usr/bin/pyority
