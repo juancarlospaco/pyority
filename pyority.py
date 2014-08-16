@@ -90,7 +90,7 @@ class MainWindow(QMainWindow):
                            lambda: call('xdg-open ' + __file__, shell=True))
         helpMenu.addAction("View GitHub Repo", lambda: open_new_tab(__url__))
         helpMenu.addAction("Report Bugs", lambda: open_new_tab(
-            'https://github.com/juancarlospaco/linkode-gui/issues?state=open'))
+            'https://github.com/juancarlospaco/pyority/issues?state=open'))
         helpMenu.addAction("Check Updates", lambda: self.check_for_updates())
         container, child_container = QWidget(), QWidget()
         container_layout = QVBoxLayout(container)
