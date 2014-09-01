@@ -23,7 +23,6 @@ from getpass import getuser
 from subprocess import call
 from webbrowser import open_new_tab
 from urllib import request
-from os import nice
 
 import psutil
 from PyQt5.QtCore import QSize, Qt, QTimer
@@ -245,7 +244,11 @@ class MainWindow(QMainWindow):
 
 def main():
     ' Main Loop '
-    nice(19)
+    try:
+        from os import nice  # isort:skip
+        nice(19)  # windows has no os.nice()
+    except Exception as error:
+        print(error)
     application = QApplication(sys.argv)
     application.setStyle('Oxygen')
     application.setApplicationName(__doc__.strip().lower())
