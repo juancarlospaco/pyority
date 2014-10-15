@@ -27,6 +27,17 @@ sudo chmod +x /usr/bin/pyority
 pyority
 ```
 
+# Ubuntu and Mint:
+
+- Ubuntu, Mint, and derivatives have to change the default scheduler. This step is OPTIONAL but recommended.
+- Since it uses DeadLine that tries everything ASAP BUT ignores priorities (nice and ionice dont really work there).
+- Asuming your Disk is **sda** run on a Bash Terminal Command Line:
+
+```bash
+echo cfq | sudo tee /sys/block/sda/queue/scheduler
+```
+
+
 # Requisites:
 
 - [Python 3.x](https://www.python.org "Python Homepage")
