@@ -4,7 +4,8 @@
 
 
 # metadata
-""" Pyority """
+"""Pyority."""
+__package__ = "pyority"
 __version__ = ' 0.0.1 '
 __license__ = ' GPLv3+ '
 __author__ = ' juancarlos '
@@ -17,32 +18,38 @@ __source__ = ('https://raw.githubusercontent.com/juancarlospaco/'
 
 
 # imports
+import os
 import sys
+from ctypes import byref, cdll, create_string_buffer
 from getopt import getopt
 from getpass import getuser
 from subprocess import call
-from webbrowser import open_new_tab
 from urllib import request
+from webbrowser import open_new_tab
 
 import psutil
 from PyQt5.QtCore import QSize, Qt, QTimer
 from PyQt5.QtGui import QColor, QIcon
-from PyQt5.QtWidgets import (QAbstractItemView, QApplication, QVBoxLayout,
+from PyQt5.QtWidgets import (QAbstractItemView, QApplication, QFontDialog,
                              QGraphicsDropShadowEffect, QGroupBox, QHBoxLayout,
                              QLabel, QMainWindow, QMessageBox, QShortcut,
-                             QSlider, QTableWidget, QTableWidgetItem, QWidget,
-                             QFontDialog)
+                             QSlider, QTableWidget, QTableWidgetItem,
+                             QVBoxLayout, QWidget)
 
 
-HELP = """<h3>Pyority:</h3><b>Change CPU and I/O Priorities with Python!</b><br>
-{} version {}, licence GPLv3+, by {}""".format(__doc__, __version__, __author__)
+HELP = """<h3>Pyority:</h3><b>Change CPU and I/O Priority with Python!</b><br>
+{} version {}, licence GPLv3+,by {}""".format(__doc__, __version__, __author__)
 
 
 ###############################################################################
 
 
 class MainWindow(QMainWindow):
+
+    """Main window class."""
+
     def __init__(self, parent=None):
+        """Init class."""
         super(MainWindow, self).__init__()
         self.setWindowTitle(__doc__.strip().capitalize())
         self.statusBar().showMessage(" Choose one App and move the sliders !")
@@ -86,8 +93,9 @@ class MainWindow(QMainWindow):
         helpMenu.addAction("About" + __doc__,
                            lambda: QMessageBox.about(self, __doc__, HELP))
         helpMenu.addSeparator()
-        helpMenu.addAction("Keyboard Shortcut", lambda: QMessageBox.information(
-            self, __doc__, "<b>Quit = CTRL+Q"))
+        helpMenu.addAction(
+            "Keyboard Shortcut",
+            lambda: QMessageBox.information(self, __doc__, "<b>Quit = CTRL+Q"))
         helpMenu.addAction("View Source Code",
                            lambda: call('xdg-open ' + __file__, shell=True))
         helpMenu.addAction("View GitHub Repo", lambda: open_new_tab(__url__))
@@ -156,7 +164,8 @@ class MainWindow(QMainWindow):
         self.slidercpu_timer = QTimer(self)
         self.slidercpu_timer.setSingleShot(True)
         self.slidercpu_timer.timeout.connect(self.on_slidercpu_timer_timeout)
-        QLabel(self.slidercpu).setPixmap(QIcon.fromTheme("list-add").pixmap(16))
+        QLabel(self.slidercpu).setPixmap(
+            QIcon.fromTheme("list-add").pixmap(16))
         QVBoxLayout(group1).addWidget(self.slidercpu)
         self.sliderhdd = QSlider()
         self.sliderhdd.setRange(0, 7)
@@ -172,28 +181,33 @@ class MainWindow(QMainWindow):
         self.sliderhdd_timer = QTimer(self)
         self.sliderhdd_timer.setSingleShot(True)
         self.sliderhdd_timer.timeout.connect(self.on_sliderhdd_timer_timeout)
-        QLabel(self.sliderhdd).setPixmap(QIcon.fromTheme("list-add").pixmap(16))
+        QLabel(self.sliderhdd).setPixmap(
+            QIcon.fromTheme("list-add").pixmap(16))
         QVBoxLayout(group2).addWidget(self.sliderhdd)
         QVBoxLayout(group0).addWidget(self.table)
 
     def set_cpu_value(self):
+        """Set the CPU value."""
         if self.slidercpu_timer.isActive():
             self.slidercpu_timer.stop()
         self.slidercpu_timer.start(1000)
 
     def set_hdd_value(self):
+        """Set the Disk value."""
         if self.sliderhdd_timer.isActive():
             self.sliderhdd_timer.stop()
         self.sliderhdd_timer.start(1000)
 
     def on_slidercpu_timer_timeout(self):
+        """What to do on slider timer time out."""
         pid = int(tuple(self.table.currentItem().toolTip().split(","))[3])
         nice_before = psutil.Process(pid).nice()
         psutil.Process(pid).nice(self.slidercpu.value())
-        self.statusBar().showMessage('nice before: {}, nice after: {}.'.format(
+        self.statusBar().showMessage('Nice before: {},nice after: {}.'.format(
             nice_before, psutil.Process(pid).nice()), 5000)
 
     def on_sliderhdd_timer_timeout(self):
+        """What to do on slider timer time out."""
         pid = int(tuple(self.table.currentItem().toolTip().split(","))[3])
         ionice_before = psutil.Process(pid).ionice()
         psutil.Process(pid).ionice(
@@ -214,7 +228,7 @@ class MainWindow(QMainWindow):
         return QMessageBox.information(self, __doc__.title(), "<b>" + m)
 
     def center(self):
-        """Center the Window on the Current Screen,with Multi-Monitor support"""
+        """Center Window on the Current Screen,with Multi-Monitor support."""
         window_geometry = self.frameGeometry()
         mousepointer_position = QApplication.desktop().cursor().pos()
         screen = QApplication.desktop().screenNumber(mousepointer_position)
@@ -223,19 +237,20 @@ class MainWindow(QMainWindow):
         self.move(window_geometry.topLeft())
 
     def move_to_mouse_position(self):
-        """Center the Window on the Current Mouse position"""
+        """Center the Window on the Current Mouse position."""
         window_geometry = self.frameGeometry()
         window_geometry.moveCenter(QApplication.desktop().cursor().pos())
         self.move(window_geometry.topLeft())
 
     def closeEvent(self, event):
-        ' Ask to Quit '
+        """Ask to Quit."""
         the_conditional_is_true = QMessageBox.question(
             self, __doc__.title(), 'Quit ?.', QMessageBox.Yes | QMessageBox.No,
             QMessageBox.No) == QMessageBox.Yes
         event.accept() if the_conditional_is_true else event.ignore()
 
     def generate_process_list(self):
+        """Return a list of processes."""
         return [p for p in psutil.process_iter() if p.username() == getuser()]
 
 
@@ -243,12 +258,16 @@ class MainWindow(QMainWindow):
 
 
 def main():
-    ' Main Loop '
+    """Main Loop."""
+    APPNAME = str(__package__ or __doc__)[:99].lower().strip().replace(" ", "")
     try:
-        from os import nice  # isort:skip
-        nice(19)  # windows has no os.nice()
-    except Exception as error:
-        print(error)
+        os.nice(19)  # smooth cpu priority
+        libc = cdll.LoadLibrary('libc.so.6')  # set process name
+        buff = create_string_buffer(len(APPNAME) + 1)
+        buff.value = bytes(APPNAME.encode("utf-8"))
+        libc.prctl(15, byref(buff), 0, 0, 0)
+    except Exception as reason:
+        print(reason)
     application = QApplication(sys.argv)
     application.setStyle('Oxygen')
     application.setApplicationName(__doc__.strip().lower())
