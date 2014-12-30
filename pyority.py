@@ -7,7 +7,7 @@
 """Pyority."""
 __package__ = "pyority"
 __version__ = ' 0.0.1 '
-__license__ = ' GPLv3+ '
+__license__ = ' GPLv3+ LGPLv3+ '
 __author__ = ' juancarlos '
 __email__ = ' juancarlospaco@gmail.com '
 __url__ = 'https://github.com/juancarlospaco/pyority#pyority'
@@ -21,8 +21,10 @@ __source__ = ('https://raw.githubusercontent.com/juancarlospaco/'
 import os
 import sys
 from ctypes import byref, cdll, create_string_buffer
+from copy import copy
 from getopt import getopt
 from getpass import getuser
+import logging as log
 from subprocess import call
 from urllib import request
 from webbrowser import open_new_tab
@@ -201,10 +203,11 @@ class MainWindow(QMainWindow):
     def on_slidercpu_timer_timeout(self):
         """What to do on slider timer time out."""
         pid = int(tuple(self.table.currentItem().toolTip().split(","))[3])
-        nice_before = psutil.Process(pid).nice()
         psutil.Process(pid).nice(self.slidercpu.value())
-        self.statusBar().showMessage('Nice before: {},nice after: {}.'.format(
-            nice_before, psutil.Process(pid).nice()), 5000)
+        nice_result = 'Nice before: {},nice after: {}.'.format(
+            psutil.Process(pid).nice(), psutil.Process(pid).nice())
+        self.statusBar().showMessage(nice_result, 5000)
+        log.info(nice_result)
 
     def on_sliderhdd_timer_timeout(self):
         """What to do on slider timer time out."""
@@ -213,9 +216,10 @@ class MainWindow(QMainWindow):
         psutil.Process(pid).ionice(
             2 if self.sliderhdd.value() < 7 else 0,
             self.sliderhdd.value() if self.sliderhdd.value() < 7 else None)
-        self.statusBar().showMessage(
-            'ionice before: {}, ionice after: {}'.format(
-                ionice_before, psutil.Process(pid).ionice()), 5000)
+        nice_result = 'ionice before: {}, ionice after: {}'.format(
+            ionice_before, psutil.Process(pid).ionice())
+        self.statusBar().showMessage(nice_result, 5000)
+        log.info(nice_result)
 
     def check_for_updates(self):
         """Method to check for updates from Git repo versus this version."""
@@ -260,6 +264,40 @@ class MainWindow(QMainWindow):
 def main():
     """Main Loop."""
     APPNAME = str(__package__ or __doc__)[:99].lower().strip().replace(" ", "")
+    if not sys.platform.startswith("win") and sys.stderr.isatty():
+        def add_color_emit_ansi(fn):
+            """Add methods we need to the class."""
+            def new(*args):
+                """Method overload."""
+                if len(args) == 2:
+                    new_args = (args[0], copy(args[1]))
+                else:
+                    new_args = (args[0], copy(args[1]), args[2:])
+                if hasattr(args[0], 'baseFilename'):
+                    return fn(*args)
+                levelno = new_args[1].levelno
+                if levelno >= 50:
+                    color = '\x1b[31m'  # red
+                elif levelno >= 40:
+                    color = '\x1b[31m'  # red
+                elif levelno >= 30:
+                    color = '\x1b[33m'  # yellow
+                elif levelno >= 20:
+                    color = '\x1b[32m'  # green
+                elif levelno >= 10:
+                    color = '\x1b[35m'  # pink
+                else:
+                    color = '\x1b[0m'  # normal
+                try:
+                    new_args[1].msg = color + str(new_args[1].msg) + '\x1b[0m'
+                except Exception as reason:
+                    print(reason)  # Do not use log here.
+                return fn(*new_args)
+            return new
+        # all non-Windows platforms support ANSI Colors so we use them
+        log.StreamHandler.emit = add_color_emit_ansi(log.StreamHandler.emit)
+    log.basicConfig(level=-1, format="%(levelname)s:%(asctime)s %(message)s")
+    log.getLogger().addHandler(log.StreamHandler(sys.stderr))
     try:
         os.nice(19)  # smooth cpu priority
         libc = cdll.LoadLibrary('libc.so.6')  # set process name
@@ -267,9 +305,8 @@ def main():
         buff.value = bytes(APPNAME.encode("utf-8"))
         libc.prctl(15, byref(buff), 0, 0, 0)
     except Exception as reason:
-        print(reason)
+        log.warning(reason)
     application = QApplication(sys.argv)
-    application.setStyle('Oxygen')
     application.setApplicationName(__doc__.strip().lower())
     application.setOrganizationName(__doc__.strip().lower())
     application.setOrganizationDomain(__doc__.strip())
