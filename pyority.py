@@ -210,7 +210,7 @@ class MainWindow(QMainWindow):
         helpMenu.addAction("View GitHub Repo", lambda: open_new_tab(__url__))
         helpMenu.addAction("Report Bugs", lambda: open_new_tab(
             'https://github.com/juancarlospaco/pyority/issues?state=open'))
-        helpMenu.addAction("Check Updates", lambda: self.check_for_updates())
+        helpMenu.addAction("Check Updates", lambda: Downloader(self))
         container, child_container = QWidget(), QWidget()
         container_layout = QVBoxLayout(container)
         child_layout = QHBoxLayout(child_container)
@@ -327,16 +327,6 @@ class MainWindow(QMainWindow):
             ionice_before, psutil.Process(pid).ionice())
         self.statusBar().showMessage(nice_result, 5000)
         log.info(nice_result)
-
-    def check_for_updates(self):
-        """Method to check for updates from Git repo versus this version."""
-        this_version = str(open(__file__).read())
-        last_version = str(request.urlopen(__source__).read().decode("utf8"))
-        if this_version != last_version:
-            m = "Theres new Version available!<br>Download update from the web"
-        else:
-            m = "No new updates!<br>You have the lastest version of this app"
-        return QMessageBox.information(self, __doc__.title(), "<b>" + m)
 
     def center(self):
         """Center Window on the Current Screen,with Multi-Monitor support."""
